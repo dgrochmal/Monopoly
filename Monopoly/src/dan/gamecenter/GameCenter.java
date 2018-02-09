@@ -213,6 +213,7 @@ public class GameCenter {
 						p2.setCurrent(n);
 						Board.updateGrid(p1, p2);
 						executeTurn(n, p2, r);
+						assembleMonopolies(p2);
 						hasRolled = true;
 						break;
 					}
@@ -319,12 +320,45 @@ public class GameCenter {
 	}
 
 	private static void manageBuildings(Player p1) {
-		// TODO Player can build and sell houses and hotels on properties that they have monopolies on
+		System.out.println("Here are properties that you can build on: ");
+		ArrayList<Property> mList = new ArrayList<Property>();
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i) instanceof RegProperty){
+				RegProperty p = (RegProperty) p1.getProperties().get(i);
+				if(p.isMonopolized()){
+					System.out.printf("Property: %20s\t House Cost: %d\t Current house amount: %d\t Hotel? %b", p.getName(), p.getHouseCost(), p.getHouseNum(), p.hasHotel());
+				}
+			}
+		}
+		Scanner s = new Scanner(System.in);
+		System.out.println("Enter in the name of your properties that you want to build on. Separate by lines, and hit enter twice when done\n");
+		String p = "";
+		ArrayList<Property> tList1 = new ArrayList<Property>();
+		boolean notEmpty = true;
+		while(notEmpty){
+			p = s.nextLine();
+			if(p.length() == 0){
+				notEmpty = false;
+			}
+			int count = 0;
+			for(int i = 0; i < mList.size(); i++){
+				if(mList.get(i).getName().equals(p)){
+					tList1.add(count, mList.get(i));
+				}
+			}
+		}
+		for(int i = 0; i < tList1.size(); i++){
+			RegProperty rp = (RegProperty) tList1.get(i);
+			rp.incHouseNum();
+			p1.takeMoney(rp.getHouseCost());
 			
+		}
 	}
 
 	@SuppressWarnings("resource")
 	private static void handleTrade(Player p1, Player p2) {
+		//TODO Check format of output text
+		//TODO If trade a property, they get an AIOB exception when trying to buy their next property
 		System.out.println(p1.getName() + "'s Properties: ");
 		ArrayList<Property> pSort1 = sortProperties(p1.getProperties());
 		for(int i = 0; i < pSort1.size(); i++){
@@ -391,15 +425,18 @@ public class GameCenter {
 				}
 			}
 		}
-		System.out.printf("%s, would you like to add an amount of money to the trade('Y' or 'N')?\n", p1.getName());
-		String w = s.next().toUpperCase();
 		int amt1to2 = 0;
 		int amt2to1 = 0;
-		if(w.equals("Y")){
-			System.out.println("Enter in the number of dollars you are adding from your end: ");
-			amt1to2 = s.nextInt();
-			System.out.println("Enter in the number of dollars you are requesting from the opponent: ");
-			amt2to1 = s.nextInt();
+		if(!notEmpty){
+			System.out.printf("%s, would you like to add an amount of money to the trade('Y' or 'N')?\n", p1.getName());
+			String w = s.next().toUpperCase();
+			if(w.equals("Y")){
+				System.out.println("Enter in the number of dollars you are adding from your end: ");
+				amt1to2 = s.nextInt();
+				System.out.println("Enter in the number of dollars you are requesting from the opponent: ");
+				amt2to1 = s.nextInt();
+		}
+		
 		}
 		boolean hasDecided = false;
 		printTrade(p1, p2, tList1, tList2, goojf1to2, goojf2to1, amt1to2, amt2to1);
@@ -542,7 +579,7 @@ public class GameCenter {
 					}
 					//subtract property cost from players money
 					p1.takeMoney(cost);
-					
+					assembleMonopolies(p1);
 				} else if (ans.equals("N")){
 					//Do nothing
 				} else {
@@ -744,7 +781,7 @@ public class GameCenter {
 		d1 += 1; //ensuring that a 0 cannot be rolled
 		d2 += 1; //two dice being used to allow for "roll doubles and go again functionality" TODO
 		return d1 + d2;
-		//return 7;
+		//return 5;
 	}
 
 	private static void printStats(Player p) {
@@ -1131,8 +1168,397 @@ public class GameCenter {
 		cl.addNode(bw);
 	}
 	
-//	private boolean checkMonopolized(Property p){
-//	TODO	
-//	}
+	private static void assembleMonopolies(Player p1) {
+		boolean o = false;
+		boolean t = false;
+		boolean th = false;
+		boolean f = false;
+		
+		//Sees if the player owns a monopoly
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals("Electric Company")){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Water Works")){
+				t = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals("Electric Company")){
+					Utility p = (Utility) p1.getProperties().get(i);
+					p.setCount(2);
+				}
+				if(p1.getProperties().get(i).getName().equals("Water Works")){
+					Utility p = (Utility) p1.getProperties().get(i);
+					p.setCount(2);
+				}
+			}
+		}
+		o = false;
+		t = false;
+		
+		//Sees if the player owns a monopoly
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals("Baltic Avenue")){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Mediterranean Avenue")){
+				t = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals("Baltic Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("Mediterranean Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+			}
+		}
+		o = false;
+		t = false;
+		
+		//Sees if the player owns a monopoly
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals("Oriental Avenue")){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Vermont Avenue")){
+				t = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Connecticut Avenue")){
+				th = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t && th){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals("Oriental Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("Vermont Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("Connecticut Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+			}
+		}
+		o = false;
+		t = false;
+		th = false;
+		
+		//Sees if the player owns a monopoly
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals("St. Charles Place")){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("States Avenue")){
+				t = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Virginia Avenue")){
+				th = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t && th){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals("St. Charles Place")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("States Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("Virginia Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+			}
+		}
+		o = false;
+		t = false;
+		th = false;
+		
+		//Sees if the player owns a monopoly
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals("St. James Place")){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Tennessee Avenue")){
+				t = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("New York Avenue")){
+				th = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t && th){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals("St. James Place")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("Tennessee Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("New York Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+			}
+		}
+		o = false;
+		t = false;
+		th = false;
+		
+		//Sees if the player owns a monopoly
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals("Kentucky Avenue")){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Indiana Avenue")){
+				t = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Illinois Avenue")){
+				th = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t && th){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals("Kentucky Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("Indiana Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("Illinois Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+			}
+		}
+		o = false;
+		t = false;
+		th = false;
+		
+		//Sees if the player owns a monopoly
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals("Atlantic Avenue")){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Ventor Avenue")){
+				t = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Marvin Gardens")){
+				th = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t && th){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals("Atlantic Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("Ventor Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("Marvin Gardens")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+			}
+		}
+		o = false;
+		t = false;
+		th = false;
+		
+		//Sees if the player owns a monopoly
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals("Pacific Avenue")){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("North Carolina Avenue")){
+				t = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Pennsylvania Avenue")){
+				th = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t && th){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals("Pacific Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("North Carolina Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("Pennsylvania Avenue")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+			}
+		}
+		o = false;
+		t = false;
+		th = false;
+		
+		//Sees if the player owns a monopoly
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals("Park Place")){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Boardwalk")){
+				t = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t && th){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals("Park Place")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+				if(p1.getProperties().get(i).getName().equals("Boardwalk")){
+					RegProperty p = (RegProperty) p1.getProperties().get(i);
+					p.setMonopolized(true);
+				}
+			}
+		}
+		o = false;
+		t = false;
+		
+		checkTwoRailroads(p1, "Pennsylvania Railroad", "B. & O. Railroad");
+		checkTwoRailroads(p1, "Pennsylvania Railroad", "Reading Railroad");
+		checkTwoRailroads(p1, "Pennsylvania Railroad", "Short Line Railroad");
+		checkTwoRailroads(p1, "Reading Railroad", "B. & O. Railroad");
+		checkTwoRailroads(p1, "Short Line Railroad", "B. & O. Railroad");
+		checkTwoRailroads(p1, "Reading Railroad", "Short Line Railroad");
+		
+		checkThreeRailroads(p1, "Reading Railroad", "Pennsylvania Railroad", "B. & O. Railroad");
+		checkThreeRailroads(p1, "Reading Railroad", "Short Line Railroad", "B. & O. Railroad");
+		checkThreeRailroads(p1, "Reading Railroad", "Short Line Railroad", "Pennsylvania Railroad");
+		checkThreeRailroads(p1, "Pennsylvania Railroad", "B. & O. Railroad", "Short Line Railroad");
+		
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals("Reading Railroad")){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Pennsylvania Railroad")){
+				t = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("B. & O. Railroad")){
+				th = true;
+			}
+			if(p1.getProperties().get(i).getName().equals("Short Line Railroad")){
+				f = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t && th && f){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals("Reading Railroad")){
+					Railroad p = (Railroad) p1.getProperties().get(i);
+					p.setCost(4);
+				}
+				if(p1.getProperties().get(i).getName().equals("Pennsylvania Railroad")){
+					Railroad p = (Railroad) p1.getProperties().get(i);
+					p.setCost(4);
+				}
+				if(p1.getProperties().get(i).getName().equals("B. & O. Railroad")){
+					Railroad p = (Railroad) p1.getProperties().get(i);
+					p.setCost(4);
+				}
+				if(p1.getProperties().get(i).getName().equals("Short Line Railroad")){
+					Railroad p = (Railroad) p1.getProperties().get(i);
+					p.setCost(4);
+				}
+			}
+		}
+		o = false;
+		t = false;
+		th = false;
+		f = false;
+	}
+
+	private static void checkTwoRailroads(Player p1, String string1, String string2) {
+		boolean o = false;
+		boolean t = false;
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals(string1)){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals(string2)){
+				t = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals(string1)){
+					Railroad p = (Railroad) p1.getProperties().get(i);
+					p.setCount(2);
+				}
+				if(p1.getProperties().get(i).getName().equals(string2)){
+					Railroad p = (Railroad) p1.getProperties().get(i);
+					p.setCount(2);
+				}
+			}
+		}
+		
+	}
+
+	private static void checkThreeRailroads(Player p1, String string1, String string2, String string3) {
+		boolean o = false;
+		boolean t = false;
+		boolean th = false;
+		for(int i = 0; i < p1.getProperties().size(); i++){
+			if(p1.getProperties().get(i).getName().equals(string1)){
+				o = true;
+			}
+			if(p1.getProperties().get(i).getName().equals(string2)){
+				t = true;
+			}
+			if(p1.getProperties().get(i).getName().equals(string3)){
+				th = true;
+			}
+		}
+		//If the player has a monopoly, than it sets each property as monopolized
+		if(o && t && th){
+			for(int i = 0; i < p1.getProperties().size(); i++){
+				if(p1.getProperties().get(i).getName().equals(string1)){
+					Railroad p = (Railroad) p1.getProperties().get(i);
+					p.setCount(3);
+				}
+				if(p1.getProperties().get(i).getName().equals(string2)){
+					Railroad p = (Railroad) p1.getProperties().get(i);
+					p.setCount(3);
+				}
+				if(p1.getProperties().get(i).getName().equals(string3)){
+					Railroad p = (Railroad) p1.getProperties().get(i);
+					p.setCount(3);
+				}
+			}
+		}
+	}
 
 }

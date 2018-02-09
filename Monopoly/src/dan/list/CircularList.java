@@ -3,14 +3,14 @@ package dan.list;
 
 public class CircularList {
 
-	static Node head;
-	static Node tail;
-	static int length;
+	Node head;
+	Node tail;
+	int length;
 	
 	public CircularList(Node n) {
-		head = n;
-		tail = n;
-		length = 1;
+		this.head = n;
+		this.tail = n;
+		this.length = 1;
 	}
 
 	public static Node moveThroughList(Node n, int num){

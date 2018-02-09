@@ -42,8 +42,8 @@ public class RegProperty extends Property{
 	/**
 	 * @param houseNum the houseNum to set
 	 */
-	public void setHouseNum(int houseNum) {
-		this.houseNum = houseNum;
+	public void incHouseNum() {
+		this.houseNum++;
 	}
 
 
