@@ -191,6 +191,7 @@ public class Player {
 	}
 	
 	
+	@SuppressWarnings("resource")
 	public Node move(Node n, int r) {
 //		if(isInJail() && getJailCounter() < 3){
 //			jailCounter++;
@@ -312,6 +313,20 @@ public class Player {
 	 */
 	public void setJailCounter(int jailCounter) {
 		this.jailCounter = jailCounter;
+	}
+
+	/**
+	 * @return the pCount
+	 */
+	public int getpCount() {
+		return pCount;
+	}
+
+	/**
+	 * @param pCount the pCount to set
+	 */
+	public void decPCount() {
+		this.pCount--;
 	}
 
 }

@@ -319,6 +319,7 @@ public class GameCenter {
 		}
 	}
 
+	@SuppressWarnings("resource")
 	private static void manageBuildings(Player p1) {
 		System.out.println("Here are properties that you can build on: ");
 		ArrayList<Property> mList = new ArrayList<Property>();
@@ -447,6 +448,7 @@ public class GameCenter {
 			switch(answer){
 			case 'Y' :
 				for(int i = 0; i < tList1.size(); i++){
+					p1.decPCount();
 					tList1.get(i).setOwner(p2);
 					p2.getProperties().add(p2.getProperties().size(), tList1.get(i));
 				}
@@ -474,6 +476,7 @@ public class GameCenter {
 					p1.setGoojf(true);
 				}
 				for(int i = 0; i < tList2.size(); i++){
+					p2.decPCount();
 					tList2.get(i).setOwner(p1);
 					p1.getProperties().add(p1.getProperties().size(), tList2.get(i));
 				}
@@ -511,6 +514,7 @@ public class GameCenter {
 		if(amt1to2 > 0){
 			System.out.printf("$%d in cash\n", amt1to2);
 		}
+		System.out.println();
 		System.out.printf("From %s: \n", p2.getName());
 		for(int i = 0; i < tList2.size(); i++){
 			System.out.printf("\t%s", tList2.get(i).getName());
@@ -521,6 +525,7 @@ public class GameCenter {
 		if(amt2to1 > 0){
 			System.out.printf("$%d in cash", amt2to1);
 		}
+		System.out.println();
 	}
 
 	@SuppressWarnings("resource")
