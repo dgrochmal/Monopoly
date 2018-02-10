@@ -24,21 +24,6 @@ public class Railroad  extends Property{
 		this.count = count;
 	}
 
-//	public static int calcRent(Railroad r){
-//		int c = r.getCount();
-//		if(c < 1 || c > 4){
-//			throw new IllegalArgumentException();
-//		}
-//		if(c == 1){
-//			return 25;
-//		} else if (c == 2){
-//			return 50;
-//		} else if (c == 3){
-//			return 100;
-//		} else {
-//			return 200;
-//		}
-//	}
 	@Override
 	public int calcRent() {
 		if(count == 1){

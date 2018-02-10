@@ -18,14 +18,12 @@ public class Board {
 
 	
 	static ArrayList<char[]> board;
-	//static ArrayList<char[]> boardOld;
 	
 	/**
 	 * 
 	 */
 	public Board(String file) {
 		board = new ArrayList<char[]>();
-		//boardOld = new ArrayList<char[]>();
 		readBoard(file);
 	}
 
@@ -41,13 +39,11 @@ public class Board {
 		while(s.hasNextLine()){
 			String line = s.nextLine();
 			board.add(currentLine, line.toCharArray());
-			//boardOld.add(currentLine, line.toCharArray());
 			currentLine++;
 		}
 	}
 	
 	public static char[] getLine(int i){
-		//String line = new String(board.get(i));
 		return board.get(i);
 	}
 	
@@ -60,10 +56,7 @@ public class Board {
 	public static void updateGrid(Player p1, Player p2) {
 		int x = p1.getCurrent().getX();
 		int y = p1.getCurrent().getY();
-		//System.out.println(x);
-		//System.out.println(y);
 		char[] l = getLine(x);
-		//char[] lLost = getLine(x);
 		for(int i = y; i < y+3; i++){
 			l[i] = p1.getAbbr().charAt(i-y);
 		}
@@ -79,7 +72,6 @@ public class Board {
 		}
 		
 		char[] l2 = getLine(x2);
-		//char[] lLost2 = getLine(x);
 		for(int i = y2; i < y2+3; i++){
 			l2[i] = p2.getAbbr().charAt(i-y2);
 		}

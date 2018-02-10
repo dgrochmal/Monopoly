@@ -358,8 +358,6 @@ public class GameCenter {
 
 	@SuppressWarnings("resource")
 	private static void handleTrade(Player p1, Player p2) {
-		//TODO Check format of output text
-		//TODO If trade a property, they get an AIOB exception when trying to buy their next property
 		System.out.println(p1.getName() + "'s Properties: ");
 		ArrayList<Property> pSort1 = sortProperties(p1.getProperties());
 		for(int i = 0; i < pSort1.size(); i++){
@@ -786,7 +784,7 @@ public class GameCenter {
 		d1 += 1; //ensuring that a 0 cannot be rolled
 		d2 += 1; //two dice being used to allow for "roll doubles and go again functionality" TODO
 		return d1 + d2;
-		//return 5;
+		//return 10;
 	}
 
 	private static void printStats(Player p) {
@@ -806,7 +804,6 @@ public class GameCenter {
 			System.out.println("Has a 'Get out of jail free' Card");
 		}
 		System.out.println();
-		//print properties, GOOJF, etc
 	}
 
 	private static ArrayList<Property> sortProperties(ArrayList<Property> properties) {
@@ -1174,6 +1171,7 @@ public class GameCenter {
 	}
 	
 	private static void assembleMonopolies(Player p1) {
+		//TODO did not correctly identify monopoly of light blue properties
 		boolean o = false;
 		boolean t = false;
 		boolean th = false;

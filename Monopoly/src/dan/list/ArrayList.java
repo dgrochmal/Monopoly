@@ -33,11 +33,6 @@ public class ArrayList<E> {
 		if (obj == null){
 			throw new NullPointerException();
 		}
-//		for (int i = 0; i < this.size; i++) {
-//			if (obj.equals(this.list[i])){ 
-//				throw new IllegalArgumentException();
-//			}
-//		}
 		if (this.size == this.list.length) {
 			growArray();
 		}
@@ -70,19 +65,6 @@ public class ArrayList<E> {
 		return (E) temp;
 	}
 	
-//	/**
-//	 * Swaps two elements for use in sorting
-//	 * @param i index of first
-//	 * @param j index of second
-//	 */
-//	public void swap(int i, int j){
-//		E temp;
-//		E one = this.get(i);
-//		E two = this.get(j);
-//		temp = one;
-//		this.list[i] = two;
-//		this.list[j] = temp;
-//	}
 	
 	/**
 	 * Increases the capacity of the ArrayList 

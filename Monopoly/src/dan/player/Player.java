@@ -3,6 +3,7 @@ package dan.player;
 import java.util.Scanner;
 
 import dan.cards.Cards;
+import dan.gamecenter.GameCenter;
 import dan.list.ArrayList;
 import dan.list.Node;
 import dan.property.Property;
@@ -193,14 +194,8 @@ public class Player {
 	
 	@SuppressWarnings("resource")
 	public Node move(Node n, int r) {
-//		if(isInJail() && getJailCounter() < 3){
-//			jailCounter++;
-//			System.out.println("To get out of jail, select 'P' to pay $50, get out, and complete roll, or select 'S' to stay in jail.");
-//			Scanner s = new Scanner(System.in);
-//			if(s.next().equals("P")){
-//				takeMoney(50);
-//				setInJail(false);
-//			}
+//		if(n.getName().equals("Free Parking")){
+//			GameCenter.waitTwo();
 //		}
 		if(n.getName().equals("Go To Jail")){
 			for(int i = 0; i < 20; i++){

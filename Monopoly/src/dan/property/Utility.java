@@ -25,15 +25,6 @@ public class Utility extends Property {
 		this.count = count;
 	}
 
-//	public static int calcRent(int roll, int count){
-//		if(count == 1){
-//			return roll * 4;
-//		} else if (count == 2){
-//			return roll * 10;
-//		} else {
-//			throw new IllegalArgumentException("Invalid count number");
-//		}
-//	}
 	@Override
 	public int calcRent() {
 		if (count == 1){

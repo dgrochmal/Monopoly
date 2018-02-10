@@ -172,23 +172,6 @@ public class RegProperty extends Property{
 		this.monopolized = monopolized;
 	}
 
-//	public static int calcRent(RegProperty p){
-//		int n = p.getHouseNum();
-//		if(p.hasHotel){
-//			return p.getHotelRent();
-//		} else if (n == 1){
-//			return p.getOneHouseRent();
-//		} else if (n == 2){
-//			return p.getTwoHouseRent();
-//		} else if (n == 3){
-//			return p.getThreeHouseRent();
-//		} else if (n == 4){
-//			return p.getFourHouseRent();
-//		} else {
-//			return 0;
-//		}
-//	}
-
 	@Override
 	public int calcRent() {
 		if(hasHotel){
