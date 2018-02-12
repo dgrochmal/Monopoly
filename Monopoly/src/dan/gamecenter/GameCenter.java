@@ -109,7 +109,6 @@ public class GameCenter {
 			String p3Abbr = in.next();
 			p3 = new Player(p3Name, p3Abbr, cl.getHead());
 		}
-		//Getting a null pointer here
 		players = new ArrayList<Player>();
 		players.add(0, p1);
 		players.add(1, p2);
@@ -147,6 +146,7 @@ public class GameCenter {
 			while(p1.getMoney() >= 0 && p2.getMoney() >= 0){
 				String ans = "";
 				char answer = 'e';				
+				Roll roll = null;
 				
 				boolean hasRolled = false;
 				//Allows for players to cycle through all options endlessly until they roll
@@ -171,14 +171,19 @@ public class GameCenter {
 							handleTrade(p1, p2);
 							break;
 						case 'R' :
-							int r = roll();
+							roll = new Roll();
+							int r = roll.getTotal();
 							System.out.println("You rolled a: " + r);
 							waitTwo();
 							Node n = p1.move(p1.getCurrent(), r);
 							p1.setCurrent(n);
 							Board.updateGrid(p1, p2);
 							executeTurn(n, p1, r);
-							hasRolled = true;
+							if(!roll.isDouble()){
+								hasRolled = true;
+							} else {
+								System.out.println("You rolled doubles! Go Again.\n");
+							}
 							break;
 					}
 				}				
@@ -206,7 +211,8 @@ public class GameCenter {
 						unMortgageProperties(p1);
 						break;
 					case 'R' :
-						int r = roll();
+						roll = new Roll();
+						int r = roll.getTotal();
 						System.out.println("You rolled a: " + r);
 						waitTwo();
 						Node n = p2.move(p2.getCurrent(), r);
@@ -214,7 +220,11 @@ public class GameCenter {
 						Board.updateGrid(p1, p2);
 						executeTurn(n, p2, r);
 						assembleMonopolies(p2);
-						hasRolled = true;
+						if(!roll.isDouble()){
+							hasRolled = true;
+						} else {
+							System.out.println("You rolled doubles! Go Again.\n");  //Handle jail doubles in Player.java
+						}
 						break;
 					}
 				}
@@ -828,15 +838,15 @@ public class GameCenter {
 		return null;
 	}
 
-	private static int roll() {
-		Random rg = new Random();
-		int d1 = rg.nextInt(5);
-		int d2 = rg.nextInt(5);
-		d1 += 1; //ensuring that a 0 cannot be rolled
-		d2 += 1; //two dice being used to allow for "roll doubles and go again functionality" TODO
-		return d1 + d2;
-		//return 1;
-	}
+//	private static int roll() {
+//		Random rg = new Random();
+//		int d1 = rg.nextInt(5);
+//		int d2 = rg.nextInt(5);
+//		d1 += 1; //ensuring that a 0 cannot be rolled
+//		d2 += 1; //two dice being used to allow for "roll doubles and go again functionality" TODO
+//		return d1 + d2;
+//		//return 1;
+//	}
 
 	private static void printStats(Player p) {
 		System.out.println();
