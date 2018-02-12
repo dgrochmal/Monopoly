@@ -258,18 +258,32 @@ public class GameCenter {
 		for(int i = 0; i < tList1.size(); i++){
 			System.out.println(tList1.get(i).getName());
 		}
-		String ans = s.next().toUpperCase();
-		if(ans.equals("Y")){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				for(int j = 0; j < tList1.size(); j++){
-					if(p1.getProperties().get(i).getName().equals(tList1.get(j).getName())){
-						p1.getProperties().get(i).setMortgage(false);
-						p1.takeMoney(p1.getProperties().get(i).getCost() / 2);
+		boolean decision = true;
+		int q = 0;
+
+		while(decision){
+			if(q > 0){
+				System.out.println("Are these the right properties ('Y' OR 'N')?");
+			}
+			String ans = s.next().toUpperCase();
+			char answer = ans.charAt(0);
+			switch(answer){
+			case 'Y' :
+				for(int i = 0; i < p1.getProperties().size(); i++){
+					for(int j = 0; j < tList1.size(); j++){
+						if(p1.getProperties().get(i).getName().equals(tList1.get(j).getName())){
+							p1.getProperties().get(i).setMortgage(false);
+							p1.takeMoney(p1.getProperties().get(i).getCost() / 2);
+						}
 					}
 				}
+				decision = false;
+				break;
+			case 'N':
+				break;
+			default :
+				q++;
 			}
-		} else {
-			//Do nothing?
 		}
 		
 	}
@@ -304,35 +318,57 @@ public class GameCenter {
 		for(int i = 0; i < tList1.size(); i++){
 			System.out.println(tList1.get(i).getName());
 		}
-		String ans = s.next().toUpperCase();
-		if(ans.equals("Y")){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				for(int j = 0; j < tList1.size(); j++){
-					if(p1.getProperties().get(i).getName().equals(tList1.get(j).getName())){
-						p1.getProperties().get(i).setMortgage(true);
-						p1.addMoney(p1.getProperties().get(i).getCost() / 2);
+		
+		boolean decision = true;
+		int q = 0;
+
+		while(decision){
+			if(q > 0){
+				System.out.println("Are these properties correct ('Y' OR 'N')?");
+			}
+			String ans = s.next().toUpperCase();
+			char answer = ans.charAt(0);
+			switch(answer){
+			case 'Y' :
+				for(int i = 0; i < p1.getProperties().size(); i++){
+					for(int j = 0; j < tList1.size(); j++){
+						if(p1.getProperties().get(i).getName().equals(tList1.get(j).getName())){
+							p1.getProperties().get(i).setMortgage(true);
+							p1.addMoney(p1.getProperties().get(i).getCost() / 2);
+						}
 					}
 				}
+				decision = false;
+				break;
+			case 'N':
+				break;
+			default :
+				q++;
 			}
-		} else {
-			//Do nothing?
 		}
+		
+		
 	}
 
 	@SuppressWarnings("resource")
 	private static void manageBuildings(Player p1) {
+		//TODO constrain player to build evenly on all properties
 		System.out.println("Here are properties that you can build on: ");
 		ArrayList<Property> mList = new ArrayList<Property>();
+		int idx = 0;
 		for(int i = 0; i < p1.getProperties().size(); i++){
 			if(p1.getProperties().get(i) instanceof RegProperty){
 				RegProperty p = (RegProperty) p1.getProperties().get(i);
 				if(p.isMonopolized()){
-					System.out.printf("Property: %20s\t House Cost: %d\t Current house amount: %d\t Hotel? %b", p.getName(), p.getHouseCost(), p.getHouseNum(), p.hasHotel());
+					System.out.printf("Property: %-20s\t House Cost: %d\t Current house amount: %2d Hotel? %5b\n", p.getName(), p.getHouseCost(), p.getHouseNum(), p.hasHotel());
+					mList.add(idx, p);
+					idx++;
 				}
 			}
 		}
 		Scanner s = new Scanner(System.in);
 		System.out.println("Enter in the name of your properties that you want to build on. Separate by lines, and hit enter twice when done\n");
+		System.out.println("You may enter the same property name multiple times\n");
 		String p = "";
 		ArrayList<Property> tList1 = new ArrayList<Property>();
 		boolean notEmpty = true;
@@ -350,9 +386,17 @@ public class GameCenter {
 		}
 		for(int i = 0; i < tList1.size(); i++){
 			RegProperty rp = (RegProperty) tList1.get(i);
-			rp.incHouseNum();
-			p1.takeMoney(rp.getHouseCost());
-			
+			if(rp.getHouseNum() == 4){
+				rp.setHasHotel(true);
+				rp.setHouseNum(0);
+				p1.takeMoney(rp.getHouseCost());
+				p1.incHotelAmt();
+				p1.setHouseAmt(p1.getHotelAmt() - 4);
+			} else {
+				rp.incHouseNum();
+				p1.incHouseAmt();
+				p1.takeMoney(rp.getHouseCost());
+			}
 		}
 	}
 
@@ -543,6 +587,7 @@ public class GameCenter {
 					mortgageProperties(p1);
 				}
 				//TODO opportunity to also sell houses/hotels
+				//TODO not just here but at any point
 				p1.takeMoney(rent);
 				owner.addMoney(rent);
 				System.out.printf("Transferring rent of $%d from %s to %s.\n%s's money total is $%d and %s's money total is $%d.\n\n", rent, p1.getName(), owner.getName(), p1.getName(), p1.getMoney(), owner.getName(), owner.getMoney());
@@ -656,14 +701,23 @@ public class GameCenter {
 			waitTwo();
 			Board.updateGrid(p);
 			executeTurn(n, p, 0);
-		} else if(card.equals("Go to Jail–Go directly to Jail–Do not pass Go, do not collect $200")){
-			Node n = p.cardMove(p.getCurrent(), card);
-			p.setCurrent(n);
-			waitTwo();
-			Board.updateGrid(p);
-			executeTurn(n, p, 0);
-		} else if(card.equals("Make general repairs on all your property–For each house pay $25–For each hotel $100")){
-			//TODO
+		} 
+//		else if(card.equals("Go to Jail–Go directly to Jail–Do not pass Go, do not collect $200")){
+//			Node n = p.cardMove(p.getCurrent(), card);
+//			p.setCurrent(n);
+//			waitTwo();
+//			Board.updateGrid(p);
+//			executeTurn(n, p, 0);
+//		} 
+		else if(card.equals("Make general repairs on all your property–For each house pay $25–For each hotel $100")){
+			int total = 0;
+			for(int i = 0; i < p.getHouseAmt(); i++){
+				total += 25;
+			}
+			for(int j = 0; j < p.getHotelAmt(); j++){
+				total += 100;
+			}
+			p.takeMoney(total);
 		} else if(card.equals("Pay poor tax of $15")){
 			p.takeMoney(15);
 		} else if(card.equals("Take a trip to Reading Railroad–If you pass Go, collect $200")){
@@ -732,7 +786,14 @@ public class GameCenter {
 		} else if(card.equals("Receive $25 Consultancy Fee ")){
 			p.addMoney(25);
 		} else if(card.equals("You are assessed for street repairs – $40 per house, $115 per hotel ")){
-			//TODO
+			int total = 0;
+			for(int i = 0; i < p.getHouseAmt(); i++){
+				total += 40;
+			}
+			for(int j = 0; j < p.getHotelAmt(); j++){
+				total += 115;
+			}
+			p.takeMoney(total);
 		} else if(card.equals("You have won second prize in a beauty contest– collect $10 ")){
 			p.addMoney(10);
 		} else if(card.equals("You inherit $100 ")){
@@ -751,16 +812,6 @@ public class GameCenter {
 		} else {
 			return p.calcRent();
 		}
-//		String pType = p.getClass().getName().substring(13);
-//		if(pType.equals("Railroad")){
-//			return 25;
-//			//TODO add code for changed rent
-//		} else if (pType.equals("Utility")){
-//			return 6 * r;
-//		} else if (pType.equals("RegProperty")){
-//			return p.getRent();
-//		}
-//		return 0;
 	}
 
 	private static Player findOwner(Property p) {
@@ -784,7 +835,7 @@ public class GameCenter {
 		d1 += 1; //ensuring that a 0 cannot be rolled
 		d2 += 1; //two dice being used to allow for "roll doubles and go again functionality" TODO
 		return d1 + d2;
-		//return 10;
+		//return 1;
 	}
 
 	private static void printStats(Player p) {
@@ -806,214 +857,265 @@ public class GameCenter {
 		System.out.println();
 	}
 
-	private static ArrayList<Property> sortProperties(ArrayList<Property> properties) {
+	public static ArrayList<Property> sortProperties(ArrayList<Property> properties) {
 		//TODO does not properly split property groups
 		ArrayList<Property> sList = new ArrayList<Property>();
 		Property p = new Railroad("----------------------", 0, 0);
 		int idx = 0;
-		boolean lPrint = false; //true if seperator is necessary, false otherwise
+		//boolean lPrint = false; //true if seperator is necessary, false otherwise
 		int s = properties.size();
+		boolean o = false;
+		boolean t = false;
+		boolean th = false;
+		boolean f = false;
 		for(int i = 0; i < s; i++){
 			if(properties.get(i).getName().equals("Mediterranean Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				o = true;
 			}
 			if(properties.get(i).getName().equals("Baltic Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				t = true;
 			}
-			if(lPrint){
-				sList.add(idx, p);
-				idx++;
-			}
-			lPrint = false;
-			
+		}
+		if(o || t){
+			sList.add(idx, p);
+			idx++;
+		}
+		
+		o = false;
+		t = false;
+		
+		for(int i = 0; i < s; i++){
 			if(properties.get(i).getName().equals("Oriental Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				o = true;
 			}
 			if(properties.get(i).getName().equals("Vermont Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				t = true;
 			}
 			if(properties.get(i).getName().equals("Connecticut Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				th = true;
 			}
-			if(lPrint){
-				sList.add(idx, p);
-				idx++;
-			}
-			lPrint = false;
+		}
+		if(o || t || th){
+			sList.add(idx, p);
+			idx++;
+		}
+		
+		o = false;
+		t = false;
+		th = false;
 			
+		for(int i = 0; i < s; i++){
 			if(properties.get(i).getName().equals("St. Charles Place")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				o = true;
 			}
 			if(properties.get(i).getName().equals("States Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				t = true;
 			}
 			if(properties.get(i).getName().equals("Virginia Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				th = true;
 			}
-			if(lPrint){
-				sList.add(idx, p);
-				idx++;
-			}
-			lPrint = false;
+		}
+		if(o || t || th){
+			sList.add(idx, p);
+			idx++;
+		}
+		
+		o = false;
+		t = false;
+		th = false;
 			
+		for(int i = 0; i < s; i++){
 			if(properties.get(i).getName().equals("St. James Place")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				o = true;
 			}
 			if(properties.get(i).getName().equals("Tennessee Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				t = true;
 			}
 			if(properties.get(i).getName().equals("New York Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				th = true;
 			}
-			if(lPrint){
-				sList.add(idx, p);
-				idx++;
-			}
-			lPrint = false;
+		}
+		if(o || t || th){
+			sList.add(idx, p);
+			idx++;
+		}
+		
+		o = false;
+		t = false;
+		th = false;
 			
+		for(int i = 0; i < s; i++){
 			if(properties.get(i).getName().equals("Kentucky Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				o = true;
 			}
 			if(properties.get(i).getName().equals("Indiana Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				t = true;
 			}
 			if(properties.get(i).getName().equals("Illinois Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				th = true;
 			}
-			if(lPrint){
-				sList.add(idx, p);
-				idx++;
-			}
-			lPrint = false;
+		}
+		if(o || t || th){
+			sList.add(idx, p);
+			idx++;
+		}
+		
+		o = false;
+		t = false;
+		th = false;
 			
+		for(int i = 0; i < s; i++){
 			if(properties.get(i).getName().equals("Atlantic Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				o = true;
 			}
 			if(properties.get(i).getName().equals("Ventor Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				t = true;
 			}
 			if(properties.get(i).getName().equals("Marvin Gardens")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				th = true;
 			}
-			if(lPrint){
-				sList.add(idx, p);
-				idx++;
-			}
-			lPrint = false;
+		}
+		if(o || t || th){
+			sList.add(idx, p);
+			idx++;
+		}
+		
+		o = false;
+		t = false;
+		th = false;
 			
+		for(int i = 0; i < s; i++){
 			if(properties.get(i).getName().equals("Pacific Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				o = true;
 			}
 			if(properties.get(i).getName().equals("North Carolina Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				t = true;
 			}
 			if(properties.get(i).getName().equals("Pennsylvania Avenue")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				th = true;
 			}
-			if(lPrint){
-				sList.add(idx, p);
-				idx++;
-			}
-			lPrint = false;
-			
+		}
+		if(o || t || th){
+			sList.add(idx, p);
+			idx++;
+		}
+		
+		o = false;
+		t = false;
+		th = false;
+		
+		for(int i = 0; i < s; i++){
 			if(properties.get(i).getName().equals("Park Place")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				o = true;
 			}
-			if(properties.get(i).getName().equals("Boardwark")){
+			if(properties.get(i).getName().equals("Boardwalk")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				t = true;
 			}
-			if(lPrint){
-				sList.add(idx, p);
-				idx++;
-			}
-			lPrint = false;
+		}
+		if(o || t){
+			sList.add(idx, p);
+			idx++;
+		}
+		
+		o = false;
+		t = false;
 			
+		for(int i = 0; i < s; i++){
 			if(properties.get(i).getName().equals("Reading Railroad")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				o = true;
 			}
 			if(properties.get(i).getName().equals("Pennsylvania Railroad")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				t = true;
 			}
 			if(properties.get(i).getName().equals("B. & O. Railroad")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				th = true;
 			}
 			if(properties.get(i).getName().equals("Short Line")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				f = true;
 			}
-			if(lPrint){
-				sList.add(idx, p);
-				idx++;
-			}
-			lPrint = false;
-			
+		}
+		if(o || t || th || f){
+			sList.add(idx, p);
+			idx++;
+		}
+		
+		o = false;
+		t = false;
+		th = false;
+		f = false;
+		
+		for(int i = 0; i < s; i++){
 			if(properties.get(i).getName().equals("Electric Company")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				o = true;
 			}
 			if(properties.get(i).getName().equals("Water Works")){
 				sList.add(idx, properties.get(i));
-				lPrint = true;
 				idx++;
+				t = true;
 			}
-			if(lPrint){
-				sList.add(idx, p);
-				idx++;
-			}
-			lPrint = false;
 		}
+		if(o || t){
+			sList.add(idx, p);
+			idx++;
+		}
+		
+		o = false;
+		t = false;
+		
 		return sList;
 	}
 

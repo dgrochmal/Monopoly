@@ -19,12 +19,16 @@ public class Player {
 	int pCount;
 	private boolean inJail;
 	private int jailCounter;
+	private int houseAmt;
+	private int hotelAmt;
 	
 	public Player(String name, String abbr, Node n) {
 		this.current = n;
 		this.name = name;
 		this.money = 1500;
 		this.goojf = false;
+		this.houseAmt = 0;
+		this.hotelAmt = 0;
 		if(abbr.length() != 3){
 			throw new IllegalArgumentException();
 		}
@@ -322,6 +326,48 @@ public class Player {
 	 */
 	public void decPCount() {
 		this.pCount--;
+	}
+
+	/**
+	 * @return the houseAmt
+	 */
+	public int getHouseAmt() {
+		return houseAmt;
+	}
+
+	/**
+	 * @param houseAmt the houseAmt to set
+	 */
+	public void setHouseAmt(int houseAmt) {
+		this.houseAmt = houseAmt;
+	}
+	
+	/**
+	 * @param houseAmt the houseAmt to set
+	 */
+	public void incHouseAmt() {
+		this.houseAmt++;
+	}
+
+	/**
+	 * @return the hotelAmt
+	 */
+	public int getHotelAmt() {
+		return hotelAmt;
+	}
+
+	/**
+	 * @param hotelAmt the hotelAmt to set
+	 */
+	public void setHotelAmt(int hotelAmt) {
+		this.hotelAmt = hotelAmt;
+	}
+	
+	/**
+	 * @param hotelAmt the hotelAmt to set
+	 */
+	public void incHotelAmt() {
+		this.hotelAmt++;
 	}
 
 }
