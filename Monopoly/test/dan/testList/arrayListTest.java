@@ -23,7 +23,5 @@ public class arrayListTest {
 		l.set(0, 100);
 		z = l.get(0);
 		assertEquals(100, z);
-		
 	}
-
 }

@@ -16,7 +16,7 @@ public class Roll {
 		this.dice1 += 1; //ensuring that a 0 cannot be rolled
 		this.dice2 += 1;
 		this.total = this.dice1 + this.dice2;
-//		this.total = 0; //For debugging
+		//this.total = 10; //For debugging
 		if(this.dice1 == this.dice2){
 			this.isDouble = true;
 		}

@@ -2,8 +2,9 @@ package dan.player;
 
 import java.util.Scanner;
 
+import dan.cards.Card;
 import dan.cards.Cards;
-import dan.gamecenter.GameCenter;
+//import dan.gamecenter.GameCenter;
 import dan.list.ArrayList;
 import dan.list.Node;
 import dan.property.Property;
@@ -121,47 +122,47 @@ public class Player {
 		this.current = current;
 	}
 
-	public Node cardMove(Node n, String card){
-		if(card.equals("Advance to Go (Collect $200)")){
+	public Node cardMove(Node n, Card card){
+		if(card.getDescription().equals("Advance to Go (Collect $200)")){
 			while(!n.getName().equals("GO")){
 				n = n.getNext();
 			}
 			passGo();
-		} else if(card.equals("Advance to Illinois Ave-If you pass Go, collect $200")) {
+		} else if(card.getDescription().equals("Advance to Illinois Ave-If you pass Go, collect $200")) {
 			while(!n.getName().equals("Illinois Avenue")){
 				n = n.getNext();
 				if(n.getName().equals("GO")){
 					passGo();
 				}
 			}
-		} else if(card.equals("Advance to St. Charles Place – If you pass Go, collect $200")){
+		} else if(card.getDescription().equals("Advance to St. Charles Place – If you pass Go, collect $200")){
 			while(!n.getName().equals("St. Charles Place")){
 				n = n.getNext();
 				if(n.getName().equals("GO")){
 					passGo();
 				}
 			}
-		} else if(card.equals("Advance token to nearest Utility. If unowned, you may buy it from the Bank.")){
+		} else if(card.getDescription().equals("Advance token to nearest Utility. If unowned, you may buy it from the Bank.")){
 			while(!n.getName().equals("Electric Company") && !n.getName().equals("Water Works")){
 				n = n.getNext();
 				if(n.getName().equals("GO")){
 					passGo();
 				}
 			}
-		} else if(card.equals("Advance token to the nearest Railroad. If Railroad is unowned, you may buy it from the Bank.")){
+		} else if(card.getDescription().equals("Advance token to the nearest Railroad. If Railroad is unowned, you may buy it from the Bank.")){
 			while(!n.getName().equals("Reading Railroad") && !n.getName().equals("Pennsylvania Railroad") && !n.getName().equals("B. & O. Railroad") && !n.getName().equals("Short Line")){
 				n = n.getNext();
 				if(n.getName().equals("GO")){
 					passGo();
 				}
 			}
-		} else if(card.equals("Go Back 3 Spaces")){
+		} else if(card.getDescription().equals("Go Back 3 Spaces")){
 			for(int i = 0; i < 37; i++){
 				n = n.getNext();
 			}
 			//Community chest, income tax, or new york avenue
 			if(n.getName().equals("Community Chest")){
-				String c = Cards.getChestCard();
+				Card c = Cards.getChestCard();
 				System.out.printf("Your Community Chest Card is:\n%s\n\n", card);
 				//TODO
 			} else if (n.getName().equals("New York Avenue")){
@@ -170,23 +171,23 @@ public class Player {
 				//TODO
 			}
 			//move(n, 0);
-		} else if (card.equals("Go to Jail–Go directly to Jail–Do not pass Go, do not collect $200")){
+		} else if (card.getDescription().equals("Go to Jail–Go directly to Jail–Do not pass Go, do not collect $200")){
 			while(!n.getName().equals("Jail")){
 				n = n.getNext();
 			}
 			setInJail(true);
-		} else if (card.equals("Take a trip to Reading Railroad–If you pass Go, collect $200")){
+		} else if (card.getDescription().equals("Take a trip to Reading Railroad–If you pass Go, collect $200")){
 			while(!n.getName().equals("Reading Railroad")){
 				n = n.getNext();
 				if(n.getName().equals("GO")){
 					passGo();
 				}
 			}
-		} else if (card.equals("Take a walk on the Boardwalk-Advance token to Boardwalk")){
+		} else if (card.getDescription().equals("Take a walk on the Boardwalk-Advance token to Boardwalk")){
 			while(!n.getName().equals("Reading Railroad")){
 				n = n.getNext();
 			}
-		} else if (card.equals("Go to jail – go directly to jail – Do not pass Go, do not collect $200 ")){
+		} else if (card.getDescription().equals("Go to jail – go directly to jail – Do not pass Go, do not collect $200 ")){
 			while(!n.getName().equals("Jail")){
 				n = n.getNext();
 			}

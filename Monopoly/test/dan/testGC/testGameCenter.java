@@ -23,12 +23,10 @@ public class testGameCenter {
 		Property p1 = new RegProperty("Mediterranean Avenue", 1, 1, 1, 1, 1, 1, 1, 1);
 		Property p2 = new RegProperty("Baltic Avenue", 1, 1, 1, 1, 1, 1, 1, 1);
 		Property p3 = new RegProperty("Oriental Avenue", 1, 1, 1, 1, 1, 1, 1, 1);
-		//Property p4 = new RegProperty("Vermont Avenue", 1, 1, 1, 1, 1, 1, 1, 1);
 		Property p5 = new RegProperty("Connecticut Avenue", 1, 1, 1, 1, 1, 1, 1, 1);
 		ArrayList<Property> pList = new ArrayList<Property>();
 		pList.add(0, p5);
 		pList.add(0, p1);
-		//pList.add(0, p4);
 		pList.add(0, p3);
 		pList.add(0, p2);
 		ArrayList<Property> sList = new ArrayList<Property>();

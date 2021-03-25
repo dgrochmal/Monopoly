@@ -3,11 +3,11 @@ package dan.gamecenter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import dan.board.Board;
+import dan.cards.Card;
 import dan.cards.Cards;
 import dan.list.ArrayList;
 import dan.list.CircularList;
@@ -70,7 +70,7 @@ public class GameCenter {
 	
 	static boolean twoPlayer = false;
 	
-	public GameCenter() {
+	public GameCenter(Board board, Cards c) {
 		// TODO Auto-generated constructor stub
 		//System.out.println("I AM PRINTING FROM THE CONSTRUCTOR BUT I CAN ALSO INITIALIZE STUFF");
 	}
@@ -81,7 +81,7 @@ public class GameCenter {
 	public static void main(String [] args){
 		Board b = new Board("input/board.txt");
 		Cards c = new Cards("input/chance.txt", "input/chest.txt");
-		gc = new GameCenter();
+		gc = new GameCenter(b, c);
 		readProperties("input/properties.txt", "input/railroads.txt", "input/utilities.txt");
 		setUpCircularList();
 		System.out.println("How many players? (2 or 3): ");
@@ -90,17 +90,17 @@ public class GameCenter {
 		if(!(numberOfPlayers == 2 || numberOfPlayers == 3)){
 			throw new IllegalArgumentException("Illegal player number");
 		}
-//		System.out.println("Enter Player 1 infomation (<Name> <3 character abbreviation>): ");
-//		String p1Name = in.next();
-//		String p1Abbr = in.next();
-//		Player p1 = new Player(p1Name, p1Abbr, cl.getHead());
-		Player p1 = new Player("Dan", "ddd", cl.getHead());
+		System.out.println("Enter Player 1 infomation (<Name> <3 character abbreviation>): ");
+		String p1Name = in.next();
+		String p1Abbr = in.next();
+		Player p1 = new Player(p1Name, p1Abbr, cl.getHead());
+		//Player p1 = new Player("Dan", "ddd", cl.getHead());
 		
-//		System.out.println("Enter Player 2 infomation (<Name> <3 character abbreviation>): ");
-//		String p2Name = in.next();
-//		String p2Abbr = in.next();
-//		Player p2 = new Player(p2Name, p2Abbr, cl.getHead());
-		Player p2 = new Player("Emily", "eee", cl.getHead());
+		System.out.println("Enter Player 2 infomation (<Name> <3 character abbreviation>): ");
+		String p2Name = in.next();
+		String p2Abbr = in.next();
+		Player p2 = new Player(p2Name, p2Abbr, cl.getHead());
+		//Player p2 = new Player("Emily", "eee", cl.getHead());
 		
 		Player p3 = null;
 		if(numberOfPlayers == 3){
@@ -175,14 +175,21 @@ public class GameCenter {
 							int r = roll.getTotal();
 							System.out.println("You rolled a: " + r);
 							waitTwo();
+							if((p1.getCurrent().getName().equals("Jail/Just Visiting") || p1.getCurrent().getName().equals("Go To Jail")) && p1.isInJail() && roll.isDouble()){
+								p1.setInJail(false);
+								System.out.println("You rolled double and got out of jail");
+							}
 							Node n = p1.move(p1.getCurrent(), r);
 							p1.setCurrent(n);
+							if(n.getName().equals("Go To Jail")){
+								hasRolled = true;
+							}
 							Board.updateGrid(p1, p2);
 							executeTurn(n, p1, r);
 							if(!roll.isDouble()){
 								hasRolled = true;
-							} else {
-								System.out.println("You rolled doubles! Go Again.\n");
+							} else if (!hasRolled){
+								System.out.printf("You rolled doubles %d's! Go Again.\n", roll.getTotal()/2);
 							}
 							break;
 					}
@@ -202,27 +209,35 @@ public class GameCenter {
 						handleTrade(p2, p1);
 						break;
 					case 'H' :
-						manageBuildings(p1);
+						manageBuildings(p2);
 						break;
 					case 'M' :
-						mortgageProperties(p1);
+						mortgageProperties(p2);
 						break;
 					case 'U' :
-						unMortgageProperties(p1);
+						unMortgageProperties(p2);
 						break;
 					case 'R' :
 						roll = new Roll();
 						int r = roll.getTotal();
 						System.out.println("You rolled a: " + r);
 						waitTwo();
+						if((p2.getCurrent().getName().equals("Jail/Just Visiting")  || p1.getCurrent().getName().equals("Go To Jail")) && p2.isInJail() && roll.isDouble()){
+							p2.setInJail(false);
+							System.out.println("You rolled doubles and got out of jail");
+							roll.setDouble(false);
+						}
 						Node n = p2.move(p2.getCurrent(), r);
 						p2.setCurrent(n);
+						if(n.getName().equals("Go To Jail")){
+							hasRolled = true;
+						}
 						Board.updateGrid(p1, p2);
 						executeTurn(n, p2, r);
-						assembleMonopolies(p2);
+						Monopolize m = new Monopolize(p2);
 						if(!roll.isDouble()){
 							hasRolled = true;
-						} else {
+						} else if (roll.isDouble()){
 							System.out.println("You rolled doubles! Go Again.\n");  //Handle jail doubles in Player.java
 						}
 						break;
@@ -637,7 +652,7 @@ public class GameCenter {
 					}
 					//subtract property cost from players money
 					p1.takeMoney(cost);
-					assembleMonopolies(p1);
+					Monopolize m = new Monopolize(p1);
 				} else if (ans.equals("N")){
 					//Do nothing
 				} else {
@@ -649,14 +664,14 @@ public class GameCenter {
 		} else {
 			//if it is chance/CC pull a card
 			String c = n.getName();
-			String card = "";
+			Card card = null;
 			if(c.equals("Community Chest")){
 				card = Cards.getChestCard();
-				System.out.printf("Your Community Chest Card is:\n%s\n\n", card);
+				System.out.printf("Your Community Chest Card is:\n%s\n\n", card.getDescription());
 				gc.doChestAction(p1, card);
 			} else if (c.equals("Chance")){
 				card = Cards.getChanceCard();
-				System.out.printf("Your Chance Card is:\n%s\n\n", card);
+				System.out.printf("Your Chance Card is:\n%s\n\n", card.getDescription());
 				gc.doChanceAction(p1, card);
 			}
 		}		
@@ -670,56 +685,54 @@ public class GameCenter {
 		}
 	}
 	
-	private void doChanceAction(Player p, String card) {
-		if(card.equals("Advance to Go (Collect $200)")){
+	private void doChanceAction(Player p, Card card) {
+		if(card.getN() == 0){
 			Node n = p.cardMove(p.getCurrent(), card);
 			p.setCurrent(n);
 			waitTwo();
 			Board.updateGrid(p);
 			executeTurn(n, p, 0);
-		} else if(card.equals("Advance to Illinois Ave—If you pass Go, collect $200")){
+		} else if(card.getN() == 1){
 			Node n = p.cardMove(p.getCurrent(), card);
 			p.setCurrent(n);
 			waitTwo();
 			Board.updateGrid(p);
 			executeTurn(n, p, 0);
-		} else if(card.equals("Advance to St. Charles Place – If you pass Go, collect $200")){
+		} else if(card.getN() == 2){
 			Node n = p.cardMove(p.getCurrent(), card);
 			p.setCurrent(n);
 			waitTwo();
 			Board.updateGrid(p);
 			executeTurn(n, p, 0);
-		} else if(card.equals("Advance token to nearest Utility. If unowned, you may buy it from the Bank.")){
+		} else if(card.getN() == 3){
 			Node n = p.cardMove(p.getCurrent(), card);
 			p.setCurrent(n);
 			waitTwo();
 			Board.updateGrid(p);
 			executeTurn(n, p, 0);
-		} else if(card.equals("Advance token to the nearest Railroad. If Railroad is unowned, you may buy it from the Bank.")){
+		} else if(card.getN() == 4){
 			Node n = p.cardMove(p.getCurrent(), card);
 			p.setCurrent(n);
 			waitTwo();
 			Board.updateGrid(p);
 			executeTurn(n, p, 0);
-		} else if(card.equals("Bank pays you dividend of $50")){
+		} else if(card.getN() == 5){
 			p.addMoney(50);
-		} else if(card.equals("Get Out of Jail Free")){
+		} else if(card.getN() == 6){
 			p.setGoojf(true);
-		} else if(card.equals("Go Back 3 Spaces")){
+		} else if(card.getN() == 7){
 			Node n = p.cardMove(p.getCurrent(), card);
 			p.setCurrent(n);
 			waitTwo();
 			Board.updateGrid(p);
 			executeTurn(n, p, 0);
-		} 
-//		else if(card.equals("Go to Jail–Go directly to Jail–Do not pass Go, do not collect $200")){
-//			Node n = p.cardMove(p.getCurrent(), card);
-//			p.setCurrent(n);
-//			waitTwo();
-//			Board.updateGrid(p);
-//			executeTurn(n, p, 0);
-//		} 
-		else if(card.equals("Make general repairs on all your property–For each house pay $25–For each hotel $100")){
+		} else if(card.getN() == 8){
+			Node n = p.cardMove(p.getCurrent(), card);
+			p.setCurrent(n);
+			waitTwo();
+			Board.updateGrid(p);
+			executeTurn(n, p, 0);
+		} else if(card.getN() == 9){
 			int total = 0;
 			for(int i = 0; i < p.getHouseAmt(); i++){
 				total += 25;
@@ -728,74 +741,78 @@ public class GameCenter {
 				total += 100;
 			}
 			p.takeMoney(total);
-		} else if(card.equals("Pay poor tax of $15")){
+		} else if(card.getN() == 10){
 			p.takeMoney(15);
-		} else if(card.equals("Take a trip to Reading Railroad–If you pass Go, collect $200")){
+		} else if(card.getN() == 11){
 			Node n = p.cardMove(p.getCurrent(), card);
 			p.setCurrent(n);
 			waitTwo();
 			Board.updateGrid(p);
 			executeTurn(n, p, 0);
-		} else if(card.equals("Take a walk on the Boardwalk–Advance token to Boardwalk")){
+		} else if(card.getN() == 12){
 			Node n = p.cardMove(p.getCurrent(), card);
 			p.setCurrent(n);
 			waitTwo();
 			Board.updateGrid(p);
 			executeTurn(n, p, 0);
-		} else if(card.equals("You have been elected Chairman of the Board–Pay each player $50")){
+		} else if(card.getN() == 13){
 			for(int i = 0; i < players.size(); i++){
 				if(!p.getName().equals(players.get(i).getName())){
 					players.get(i).addMoney(50);
 					p.takeMoney(50 * players.size());
 				}
 			}
-		} else if(card.equals("Your building and loan matures—Collect $150")){
+		} else if(card.getN() == 14){
 			p.addMoney(150);
-		} else if(card.equals("You have won a crossword competition—Collect $100")){
+		} else if(card.getN() == 15){
 			p.addMoney(100);
 		}
 	}
 
-	private void doChestAction(Player p, String card) {
-		if(card.equals("Advance to Go (Collect $200)")){
-			
-		} else if(card.equals("Bank error in your favor - collect $75")){
-			p.addMoney(75);
-		} else if(card.equals("Doctor's fees - Pay $50 ")){
-			p.takeMoney(50);
-		} else if(card.equals("Get out of jail free – this card may be kept until needed, or sold ")){
-			p.setGoojf(true);
-		} else if(card.equals("Go to jail – go directly to jail – Do not pass Go, do not collect $200 ")){
+	private void doChestAction(Player p, Card card) {
+		if(card.getN() == 0){
 			Node n = p.cardMove(p.getCurrent(), card);
 			p.setCurrent(n);
 			waitTwo();
 			Board.updateGrid(p);
 			executeTurn(n, p, 0);
-		} else if(card.equals("It is your birthday Collect $10 from each player ")){
+		} else if(card.getN() == 1){
+			p.addMoney(75);
+		} else if(card.getN() == 2){
+			p.takeMoney(50);
+		} else if(card.getN() == 3){
+			p.setGoojf(true);
+		} else if(card.getN() == 4){
+			Node n = p.cardMove(p.getCurrent(), card);
+			p.setCurrent(n);
+			waitTwo();
+			Board.updateGrid(p);
+			executeTurn(n, p, 0);
+		} else if(card.getN() == 5){
 			for(int i = 0; i < players.size(); i++){
 				if(!p.getName().equals(players.get(i).getName())){
 					players.get(i).takeMoney(10);
 					p.addMoney(10);
 				}
 			}
-		} else if(card.equals("Grand Opera Night – collect $50 from every player for opening night seats ")){
+		} else if(card.getN() == 6){
 			for(int i = 0; i < players.size(); i++){
 				if(!p.getName().equals(players.get(i).getName())){
 					players.get(i).takeMoney(50);
 					p.addMoney(50);
 				}
 			}
-		} else if(card.equals("Income Tax refund – collect $20 ")){
+		} else if(card.getN() == 7){
 			p.addMoney(20);
-		} else if(card.equals("Life Insurance Matures – collect $100 ")){
+		} else if(card.getN() == 8){
 			p.addMoney(100);
-		} else if(card.equals("Pay Hospital Fees of $100 ")){
+		} else if(card.getN() == 9){
 			p.takeMoney(100);
-		} else if(card.equals("Pay School Fees of $50 ")){
+		} else if(card.getN() == 10){
 			p.takeMoney(50);
-		} else if(card.equals("Receive $25 Consultancy Fee ")){
+		} else if(card.getN() == 11){
 			p.addMoney(25);
-		} else if(card.equals("You are assessed for street repairs – $40 per house, $115 per hotel ")){
+		} else if(card.getN() == 12){
 			int total = 0;
 			for(int i = 0; i < p.getHouseAmt(); i++){
 				total += 40;
@@ -804,13 +821,13 @@ public class GameCenter {
 				total += 115;
 			}
 			p.takeMoney(total);
-		} else if(card.equals("You have won second prize in a beauty contest– collect $10 ")){
+		} else if(card.getN() == 13){
 			p.addMoney(10);
-		} else if(card.equals("You inherit $100 ")){
+		} else if(card.getN() == 14){
 			p.addMoney(100);
-		} else if(card.equals("From sale of stock you get $50 ")){
+		} else if(card.getN() == 15){
 			p.addMoney(50);
-		} else if(card.endsWith("Holiday Fund matures - Receive $100")){
+		} else if(card.getN() == 16){
 			p.addMoney(100);
 		}
 	}
@@ -1280,400 +1297,6 @@ public class GameCenter {
 		cl.addNode(luxTx);
 		Node bw = new Node("Boardwalk", properties.get(0), 40, 104);
 		cl.addNode(bw);
-	}
-	
-	private static void assembleMonopolies(Player p1) {
-		//TODO did not correctly identify monopoly of light blue properties
-		boolean o = false;
-		boolean t = false;
-		boolean th = false;
-		boolean f = false;
-		
-		//Sees if the player owns a monopoly
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals("Electric Company")){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Water Works")){
-				t = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals("Electric Company")){
-					Utility p = (Utility) p1.getProperties().get(i);
-					p.setCount(2);
-				}
-				if(p1.getProperties().get(i).getName().equals("Water Works")){
-					Utility p = (Utility) p1.getProperties().get(i);
-					p.setCount(2);
-				}
-			}
-		}
-		o = false;
-		t = false;
-		
-		//Sees if the player owns a monopoly
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals("Baltic Avenue")){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Mediterranean Avenue")){
-				t = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals("Baltic Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("Mediterranean Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-			}
-		}
-		o = false;
-		t = false;
-		
-		//Sees if the player owns a monopoly
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals("Oriental Avenue")){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Vermont Avenue")){
-				t = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Connecticut Avenue")){
-				th = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t && th){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals("Oriental Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("Vermont Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("Connecticut Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-			}
-		}
-		o = false;
-		t = false;
-		th = false;
-		
-		//Sees if the player owns a monopoly
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals("St. Charles Place")){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("States Avenue")){
-				t = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Virginia Avenue")){
-				th = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t && th){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals("St. Charles Place")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("States Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("Virginia Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-			}
-		}
-		o = false;
-		t = false;
-		th = false;
-		
-		//Sees if the player owns a monopoly
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals("St. James Place")){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Tennessee Avenue")){
-				t = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("New York Avenue")){
-				th = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t && th){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals("St. James Place")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("Tennessee Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("New York Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-			}
-		}
-		o = false;
-		t = false;
-		th = false;
-		
-		//Sees if the player owns a monopoly
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals("Kentucky Avenue")){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Indiana Avenue")){
-				t = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Illinois Avenue")){
-				th = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t && th){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals("Kentucky Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("Indiana Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("Illinois Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-			}
-		}
-		o = false;
-		t = false;
-		th = false;
-		
-		//Sees if the player owns a monopoly
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals("Atlantic Avenue")){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Ventor Avenue")){
-				t = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Marvin Gardens")){
-				th = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t && th){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals("Atlantic Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("Ventor Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("Marvin Gardens")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-			}
-		}
-		o = false;
-		t = false;
-		th = false;
-		
-		//Sees if the player owns a monopoly
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals("Pacific Avenue")){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("North Carolina Avenue")){
-				t = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Pennsylvania Avenue")){
-				th = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t && th){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals("Pacific Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("North Carolina Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("Pennsylvania Avenue")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-			}
-		}
-		o = false;
-		t = false;
-		th = false;
-		
-		//Sees if the player owns a monopoly
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals("Park Place")){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Boardwalk")){
-				t = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t && th){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals("Park Place")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-				if(p1.getProperties().get(i).getName().equals("Boardwalk")){
-					RegProperty p = (RegProperty) p1.getProperties().get(i);
-					p.setMonopolized(true);
-				}
-			}
-		}
-		o = false;
-		t = false;
-		
-		checkTwoRailroads(p1, "Pennsylvania Railroad", "B. & O. Railroad");
-		checkTwoRailroads(p1, "Pennsylvania Railroad", "Reading Railroad");
-		checkTwoRailroads(p1, "Pennsylvania Railroad", "Short Line Railroad");
-		checkTwoRailroads(p1, "Reading Railroad", "B. & O. Railroad");
-		checkTwoRailroads(p1, "Short Line Railroad", "B. & O. Railroad");
-		checkTwoRailroads(p1, "Reading Railroad", "Short Line Railroad");
-		
-		checkThreeRailroads(p1, "Reading Railroad", "Pennsylvania Railroad", "B. & O. Railroad");
-		checkThreeRailroads(p1, "Reading Railroad", "Short Line Railroad", "B. & O. Railroad");
-		checkThreeRailroads(p1, "Reading Railroad", "Short Line Railroad", "Pennsylvania Railroad");
-		checkThreeRailroads(p1, "Pennsylvania Railroad", "B. & O. Railroad", "Short Line Railroad");
-		
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals("Reading Railroad")){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Pennsylvania Railroad")){
-				t = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("B. & O. Railroad")){
-				th = true;
-			}
-			if(p1.getProperties().get(i).getName().equals("Short Line Railroad")){
-				f = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t && th && f){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals("Reading Railroad")){
-					Railroad p = (Railroad) p1.getProperties().get(i);
-					p.setCost(4);
-				}
-				if(p1.getProperties().get(i).getName().equals("Pennsylvania Railroad")){
-					Railroad p = (Railroad) p1.getProperties().get(i);
-					p.setCost(4);
-				}
-				if(p1.getProperties().get(i).getName().equals("B. & O. Railroad")){
-					Railroad p = (Railroad) p1.getProperties().get(i);
-					p.setCost(4);
-				}
-				if(p1.getProperties().get(i).getName().equals("Short Line Railroad")){
-					Railroad p = (Railroad) p1.getProperties().get(i);
-					p.setCost(4);
-				}
-			}
-		}
-		o = false;
-		t = false;
-		th = false;
-		f = false;
-	}
-
-	private static void checkTwoRailroads(Player p1, String string1, String string2) {
-		boolean o = false;
-		boolean t = false;
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals(string1)){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals(string2)){
-				t = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals(string1)){
-					Railroad p = (Railroad) p1.getProperties().get(i);
-					p.setCount(2);
-				}
-				if(p1.getProperties().get(i).getName().equals(string2)){
-					Railroad p = (Railroad) p1.getProperties().get(i);
-					p.setCount(2);
-				}
-			}
-		}
-		
-	}
-
-	private static void checkThreeRailroads(Player p1, String string1, String string2, String string3) {
-		boolean o = false;
-		boolean t = false;
-		boolean th = false;
-		for(int i = 0; i < p1.getProperties().size(); i++){
-			if(p1.getProperties().get(i).getName().equals(string1)){
-				o = true;
-			}
-			if(p1.getProperties().get(i).getName().equals(string2)){
-				t = true;
-			}
-			if(p1.getProperties().get(i).getName().equals(string3)){
-				th = true;
-			}
-		}
-		//If the player has a monopoly, than it sets each property as monopolized
-		if(o && t && th){
-			for(int i = 0; i < p1.getProperties().size(); i++){
-				if(p1.getProperties().get(i).getName().equals(string1)){
-					Railroad p = (Railroad) p1.getProperties().get(i);
-					p.setCount(3);
-				}
-				if(p1.getProperties().get(i).getName().equals(string2)){
-					Railroad p = (Railroad) p1.getProperties().get(i);
-					p.setCount(3);
-				}
-				if(p1.getProperties().get(i).getName().equals(string3)){
-					Railroad p = (Railroad) p1.getProperties().get(i);
-					p.setCount(3);
-				}
-			}
-		}
 	}
 
 }

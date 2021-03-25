@@ -27,23 +27,24 @@ public class Board {
 		readBoard(file);
 	}
 
+	@SuppressWarnings("resource")
 	private void readBoard(String filename) {
-		File f = new File(filename);
-		Scanner s = null;
-		int currentLine = 0;
 		try {
+			File f = new File(filename);
+			Scanner s = null;
+			int currentLine = 0;
 			s = new Scanner(f);
+			while(s.hasNextLine()){
+				String line = s.nextLine();
+				board.add(currentLine, line.toCharArray());
+				currentLine++;
+			}
 		} catch (FileNotFoundException e) {
 			System.out.println("File not found");
 		}
-		while(s.hasNextLine()){
-			String line = s.nextLine();
-			board.add(currentLine, line.toCharArray());
-			currentLine++;
-		}
 	}
 	
-	public static char[] getLine(int i){
+	public char[] getLine(int i){
 		return board.get(i);
 	}
 	
@@ -56,7 +57,7 @@ public class Board {
 	public static void updateGrid(Player p1, Player p2) {
 		int x = p1.getCurrent().getX();
 		int y = p1.getCurrent().getY();
-		char[] l = getLine(x);
+		char[] l = board.get(x);
 		for(int i = y; i < y+3; i++){
 			l[i] = p1.getAbbr().charAt(i-y);
 		}
@@ -71,7 +72,7 @@ public class Board {
 			y2 += 4;
 		}
 		
-		char[] l2 = getLine(x2);
+		char[] l2 = board.get(x2);
 		for(int i = y2; i < y2+3; i++){
 			l2[i] = p2.getAbbr().charAt(i-y2);
 		}
@@ -81,12 +82,12 @@ public class Board {
 		
 		char[] ll;
 		if(x == 42){
-			ll = getLine(x);
+			ll = board.get(x);
 			for(int i = y; i < y+3; i++){
 				ll[i] = '_';
 			}
 		} else {
-			ll = getLine(x);
+			ll = board.get(x);
 			for(int i = y; i < y+3; i++){
 				ll[i] = ' ';
 			}
@@ -95,12 +96,12 @@ public class Board {
 		
 		char[] ll2;
 		if(x2 == 42){
-			ll2 = getLine(x2);
+			ll2 = board.get(x2);
 			for(int i = y2; i < y2+3; i++){
 				ll2[i] = '_';
 			}
 		} else {
-			ll2 = getLine(x2);
+			ll2 = board.get(x2);
 			for(int i = y2; i < y2+3; i++){
 				ll2[i] = ' ';
 			}
@@ -111,7 +112,7 @@ public class Board {
 	public static void updateGrid(Player p1) {
 		int x = p1.getCurrent().getX();
 		int y = p1.getCurrent().getY();
-		char[] l = getLine(x);
+		char[] l = board.get(x);
 		for(int i = y; i < y+3; i++){
 			l[i] = p1.getAbbr().charAt(i-y);
 		}
@@ -121,12 +122,12 @@ public class Board {
 		
 		char[] ll;
 		if(x == 42){
-			ll = getLine(x);
+			ll = board.get(x);
 			for(int i = y; i < y+3; i++){
 				ll[i] = '_';
 			}
 		} else {
-			ll = getLine(x);
+			ll = board.get(x);
 			for(int i = y; i < y+3; i++){
 				ll[i] = ' ';
 			}

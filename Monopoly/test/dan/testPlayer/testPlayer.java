@@ -14,13 +14,6 @@ public class testPlayer {
 		assertEquals(p.getName(), "Daniel");
 		assertEquals(p.getAbbr(), "SoM");
 		assertEquals(p.getMoney(), 1500);
-//		try{
-//		p = new Player("Daniel", "DJGS");
-//		//System.out.println(p.getAbbr().length());
-//		fail();
-//		} catch (IllegalArgumentException e){
-//			//Argument caught correctly.
-//		}
 	}
 
 }

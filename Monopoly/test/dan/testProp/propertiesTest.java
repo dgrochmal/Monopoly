@@ -15,8 +15,7 @@ public class propertiesTest {
 		assertEquals(p.getRent(), 35);
 		assertEquals(p.getName(), "Park Place");
 		p.incHouseNum();
-		assertEquals(p.calcRent(), 175);
-		
+		assertEquals(p.calcRent(), 175);	
 	}
 
 }
